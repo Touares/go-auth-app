@@ -22,7 +22,7 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
 
 
 ## Requirements
-- Go 1.16 or higher
+- Go 1.24.1 or higher
 - Docker
 
 ## Installation
@@ -38,12 +38,26 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
 ## Configuration
 1. Create a `.env` file in the root directory and add the following environment variables:
     
-    DB_HOST=db
-    DB_USER=postgres
-    DB_PASSWORD=0663058639
-    DB_NAME=go_auth_db
-    DB_PORT=5432
-    JWT_SECRET=your_jwt_secret
+    # Database Configuration
+    DB_HOST="your_db_host"             # e.g., localhost or db (if using Docker)
+    DB_USER="your_db_user"             # e.g., postgres
+    DB_PASSWORD="your_db_password"     # Replace with your actual database password
+    DB_NAME="your_db_name"             # e.g., go_auth_db
+    DB_PORT="5432"                     # Default PostgreSQL port
+
+    # JWT Authentication
+    JWT_SECRET="your_random_access_token_secret"
+    JWT_REFRESH_SECRET="your_random_refresh_token_secret"
+    JWT_ACCESS_EXPIRATION=15           # Access token expiration time in minutes
+    JWT_REFRESH_EXPIRATION=168         # Refresh token expiration time in hours (7 days)
+
+    # Full Database Connection URL
+    DATABASE_URL="postgres://your_db_user:your_db_password@your_db_host:5432/your_db_name?sslmode=disable"
+
+    # Example instructions in README:
+    # 1. Copy this file to `.env`
+    # 2. Replace `your_db_*` and `your_jwt_*` values with your own
+    # 3. Ensure `.env` is NOT committed to version control
     
 
 ## Usage
@@ -54,6 +68,8 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
 2. The application will be available at `http://localhost:8080`.
 
 ## Running Database Migrations
+⚠️ Note: Migrations are automatically applied when running `docker-compose up --build`.  
+If you need to manually trigger migrations, use the following commands:
 - **Apply Migrations (Up)**
 
     docker-compose run --rm migrate -path=/migrations -database="postgres://postgres:0663058639@db:5432/go_auth_db?sslmode=disable" up
@@ -61,7 +77,7 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
 - **Apply Migrations (Down)**
 
     docker-compose run --rm migrate -path=/migrations -database="postgres://postgres:0663058639@db:5432/go_auth_db?sslmode=disable" down
-
+    
 ## API Endpoints
 ### Register
 - **URL:** `/register`
@@ -109,6 +125,7 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
 
 
 ###  Fetch All Users
+⚠️ Note: In a real-world scenario, this endpoint would likely be restricted to admins.
 - **URL:** `/users`
 - **Method:** `GET`
 - **Headers:**  
@@ -188,17 +205,12 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
   "message": "Password updated successfully"
     }
 - **Possible Errors:**
-    - 400 Bad Request: 
-        Both old and new passwords are required
-        password must be at least 6 characters long
-    - 401 Unauthorized:
-        Incorrect old password
-        Unauthorized
-    - 500 Internal Server Error:
-        Failed to hash new password
-        Failed to update password
-
-
+    - 400 Bad Request:
+    - Missing `old_password` or `new_password`
+    - New password must be at least 6 characters long  
+    - 401 Unauthorized: Incorrect old password  
+    - 500 Internal Server Error: Unexpected database or hashing failure  
+    
 ###  Soft Delete User
 - **URL:** `/users/me/deactivate`
 - **Method:** `DELETE`
