@@ -72,11 +72,11 @@ A lightweight authentication API built with **Go**, **PostgreSQL**, and **Docker
 If you need to manually trigger migrations, use the following commands:
 - **Apply Migrations (Up)**
 
-    docker-compose run --rm migrate -path=/migrations -database="postgres://postgres:0663058639@db:5432/go_auth_db?sslmode=disable" up
+docker-compose run --rm migrate -path=/migrations -database="postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable" up
 
 - **Apply Migrations (Down)**
 
-    docker-compose run --rm migrate -path=/migrations -database="postgres://postgres:0663058639@db:5432/go_auth_db?sslmode=disable" down
+docker-compose run --rm migrate -path=/migrations -database="postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable" down
     
 ## API Endpoints
 ### Register
@@ -210,7 +210,7 @@ If you need to manually trigger migrations, use the following commands:
     - New password must be at least 6 characters long  
     - 401 Unauthorized: Incorrect old password  
     - 500 Internal Server Error: Unexpected database or hashing failure  
-    
+
 ###  Soft Delete User
 - **URL:** `/users/me/deactivate`
 - **Method:** `DELETE`
