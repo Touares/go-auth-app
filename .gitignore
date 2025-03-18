@@ -1,0 +1,16 @@
+# Ignore compiled Go binaries
+main
+*.exe
+*.out
+
+# Ignore dependency directories
+vendor/
+
+# Ignore environment files
+.env
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+/tmp
