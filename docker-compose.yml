@@ -3,10 +3,13 @@ version: "3.8"
 services:
   db:
     image: postgres:16-alpine
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "0663058639"
-      POSTGRES_DB: go_auth_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PORT: ${DB_PORT}
     ports:
       - "5434:5432"
     healthcheck:
@@ -16,23 +19,25 @@ services:
       timeout: 3s
 
   migrate:
-        image: migrate/migrate
-        depends_on:
-          db:
-            condition: service_healthy
-        volumes:
-            - ./migrations:/migrations
-        command: ["-path", "/migrations", "-database",  "postgres://postgres:0663058639@db:5432/go_auth_db?sslmode=disable", "up"]
-        links: 
-            - db
+    image: migrate/migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    env_file:
+      - .env  # ✅ Load environment variables for migration
+    command: ["-path", "/migrations", "-database", "${DATABASE_URL}", "up"]
+    links:
+      - db
+
   app:
     build: .
     depends_on:
       migrate:
         condition: service_completed_successfully
-
-    environment:
-      DATABASE_URL: "postgres://postgres:0663058639@db:5432/go_auth_db?sslmode=disable"
+    env_file:
+      - .env  # ✅ Load environment variables for the app
     ports:
       - "8080:8080"
     networks:
